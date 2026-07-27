@@ -1,0 +1,21 @@
+{
+  "name": "autumn-framework",
+  "version": "1.0.0",
+  "description": "El framework web para el proyecto Autumn",
+  "main": "index.js",
+  "bin": {
+    "autumn": "./bin/autumn.js"
+  },
+  "scripts": {
+    "dev": "node bin/autumn.js dev"
+  },
+  "keywords": ["autumn", "framework", "atm"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "chokidar": "^5.0.0",
+    "express": "^5.2.1",
+    "fs-extra": "^11.4.0"
+  }
+}
