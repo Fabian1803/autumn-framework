@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { loadApplicationProperties } from './properties.loader.js';
 import { parseAutumnComponent } from './parser.js';
-import { processControlFlow } from './control-flow.js';
+import { extractBalancedBlock, processControlFlow } from './control-flow.js';
 import { generateFinalHtml } from './html-generator.js';
 
 export { loadApplicationProperties } from './properties.loader.js';
@@ -54,18 +54,80 @@ export function loadApplicationRoutes(combinedVariables: Record<string, any>, co
   const routesPath = path.resolve(process.cwd(), 'applicationRoutes.atm');
   const routesMap: Record<string, string> = {};
 
-  if (fs.existsSync(routesPath)) {
-    const routesContent = fs.readFileSync(routesPath, 'utf-8');
-    const mappingMatches = routesContent.matchAll(/@mapping\s*\(\s*["']([^"']+)["']\s*\)[\s\S]*?(?:public|private)\s+component\s+(\w+)\s*\(\s*["']([^"']+)["']\s*\)/g);
+  if (!fs.existsSync(routesPath)) return routesMap;
 
-    for (const match of mappingMatches) {
-      const routePath = match[1];
-      const relCompPath = match[3];
-      const absCompPath = path.resolve(process.cwd(), relCompPath);
+  const routesContent = fs.readFileSync(routesPath, 'utf-8');
 
-      if (fs.existsSync(absCompPath)) {
-        routesMap[routePath] = resolveComponentWithRepositories(absCompPath, combinedVariables, combinedStyles);
+  // Extraer las declaraciones dentro de @Router class ApplicationRoutes { ... }
+  const routerClassMatch = routesContent.match(/@Router[\s\S]*?class\s+\w+\s*\{([\s\S]*)\}/);
+  if (!routerClassMatch) return routesMap;
+
+  const classBody = routerClassMatch[1];
+
+  let pos = 0;
+  while ((pos = classBody.indexOf('@mapping', pos)) !== -1) {
+    const mapMatch = classBody.substring(pos).match(/^@mapping\s*\(\s*["']([^"']+)["']\s*\)[\s\S]*?(?:public|private)\s+component\s+(\w+)\s*\(\s*["']([^"']+)["']\s*\)/);
+    if (!mapMatch) {
+      pos += 8;
+      continue;
+    }
+
+    const parentRoute = mapMatch[1];
+    const parentCompPath = mapMatch[3];
+    const absParentPath = path.resolve(process.cwd(), parentCompPath);
+
+    let parentHtml = '';
+    if (fs.existsSync(absParentPath)) {
+      parentHtml = resolveComponentWithRepositories(absParentPath, combinedVariables, combinedStyles);
+    }
+
+    const braceStart = pos + mapMatch[0].length;
+    const block = extractBalancedBlock(classBody, braceStart);
+    const bodyContent = block ? block.body : '';
+
+    if (bodyContent && bodyContent.includes('children')) {
+      const childrenPos = bodyContent.indexOf('children');
+      const childrenBlock = extractBalancedBlock(bodyContent, childrenPos);
+      if (childrenBlock) {
+        const childrenContent = childrenBlock.body;
+        const childRegex = /@mapping\s*\(\s*["']([^"']+)["']\s*\)[\s\S]*?(?:public|private)\s+component\s+(\w+)\s*\(\s*["']([^"']+)["']\s*\)/g;
+        let cMatch: RegExpExecArray | null;
+
+        while ((cMatch = childRegex.exec(childrenContent)) !== null) {
+          const childSubPath = cMatch[1];
+          const childCompPath = cMatch[3];
+          const absChildPath = path.resolve(process.cwd(), childCompPath);
+
+          if (fs.existsSync(absChildPath)) {
+            const childHtml = resolveComponentWithRepositories(absChildPath, combinedVariables, combinedStyles);
+            const isDefault = childSubPath === '/' || childSubPath === '';
+
+            let fullChildRoute = parentRoute;
+            if (!isDefault) {
+              fullChildRoute = (parentRoute.endsWith('/') ? parentRoute.slice(0, -1) : parentRoute) + (childSubPath.startsWith('/') ? childSubPath : '/' + childSubPath);
+            }
+
+            // Inyectar el HTML de la vista hija dentro de @RouterOutlet / <app-router-outlet> de la plantilla padre
+            let fullPageHtml = parentHtml;
+            if (fullPageHtml.includes('@RouterOutlet')) {
+              fullPageHtml = fullPageHtml.replace(/@RouterOutlet/gi, `<app-router-outlet>${childHtml}</app-router-outlet>`);
+            } else if (fullPageHtml.includes('<app-router-outlet')) {
+              fullPageHtml = fullPageHtml.replace(
+                /<app-router-outlet\s*\/?>|<app-router-outlet>[\s\S]*?<\/app-router-outlet>/gi,
+                `<app-router-outlet>${childHtml}</app-router-outlet>`
+              );
+            }
+
+            routesMap[fullChildRoute] = fullPageHtml;
+            routesMap[`__child__${fullChildRoute}`] = childHtml;
+          }
+        }
       }
+
+      pos = block ? block.endIndex : pos + mapMatch[0].length;
+    } else {
+      routesMap[parentRoute] = parentHtml;
+      pos = block ? block.endIndex : pos + mapMatch[0].length;
     }
   }
 

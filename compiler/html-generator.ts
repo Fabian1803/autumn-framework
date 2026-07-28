@@ -114,28 +114,28 @@ export function generateFinalHtml(
 
       function handleRoute(pathName) {
         let content = routesMap[pathName];
+
         if (!content && pathName.startsWith('/user/')) {
           const userId = pathName.split('/')[2];
           content = \`<div style="background:#fff8ee; padding:20px; border-radius:8px;"><h3>👤 Detalle del Usuario ID: \${userId}</h3><p>Datos del usuario cargados dinámicamente.</p></div>\`;
         }
 
         if (content !== undefined) {
-          // Sub-enrutamiento para Layouts Persistentes (Header/Aside fijos, cambia solo el main)
-          const innerOutlet = document.querySelector('.landing-content app-router-outlet') || document.querySelector('.landing-content');
-          if (innerOutlet && (pathName === '/landing' || pathName === '/landing/perfil')) {
-            if (pathName === '/landing') {
-              const homeContent = \`<section class="page-card"><h2>🏠 Inicio de la Landing</h2><p>Bienvenido al módulo principal de la Landing Page construida con componentes reactivos de Autumn.</p></section>\`;
-              innerOutlet.innerHTML = homeContent;
-            } else {
-              innerOutlet.innerHTML = content;
-            }
+          const rootOutlet = document.querySelector('body > app-router-outlet') || document.querySelector('app-router-outlet');
+          
+          // Si el maquetador persistente ya está en el DOM, hacer swap solo del contenedor interno <app-router-outlet>
+          const innerOutlet = document.querySelector('.landing-content app-router-outlet');
+          const childFragment = routesMap['__child__' + pathName];
+
+          if (innerOutlet && childFragment) {
+            innerOutlet.innerHTML = childFragment;
             updateDOM();
             return;
           }
 
-          const outlet = document.querySelector('app-router-outlet') || document.querySelector('main');
-          if (outlet) {
-            outlet.innerHTML = content;
+          // Si cargamos directo, refrescamos F5 o cambiamos entre aplicaciones diferentes:
+          if (rootOutlet) {
+            rootOutlet.innerHTML = content;
             updateDOM();
           }
         }
@@ -213,5 +213,5 @@ export function generateFinalHtml(
   const distDir = path.resolve(process.cwd(), 'dist');
   fs.ensureDirSync(distDir);
   fs.writeFileSync(path.join(distDir, 'index.html'), finalHtml);
-  console.log('🍁 [Autumn TS] ¡Compilación exitosa! Sub-enrutamiento persistente en ./dist/index.html');
+  console.log('🍁 [Autumn TS] ¡Compilación exitosa! Arquitectura SPA de enrutamiento limpia en ./dist/index.html');
 }

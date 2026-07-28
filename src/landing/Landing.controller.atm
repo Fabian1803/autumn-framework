@@ -1,16 +1,12 @@
 import { Controller, View, Style, repository } from 'autumn-js';
 import { LandingHeader } from './components/LandingHeader.controller.atm';
 import { LandingAside } from './components/LandingAside.controller.atm';
-import { Home } from './pages/Home.controller.atm';
-import { Perfil } from './pages/Perfil.controller.atm';
 
 @Controller
 export class Landing {
     @repository(
         LandingHeader,
         LandingAside,
-        Home,
-        Perfil
     )
 
     @View 
@@ -20,9 +16,7 @@ export class Landing {
             <div class="landing-body">
                 <LandingAside />
                 <main class="landing-content">
-                    <app-router-outlet>
-                        <Home />
-                    </app-router-outlet>
+                    @RouterOutlet
                 </main>
             </div>
         </div>

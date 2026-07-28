@@ -8,13 +8,17 @@ export class ApplicationRoutes {
     @mapping("/")
     public component App('./src/App.controller.atm') {};
     
-    // 2. Ruta Landing pública (Layout Persistente)
+    // 2. Ruta Landing pública con hijas (Layout Persistente y RouterOutlet)
     @mapping("/landing")
-    public component Landing('./src/landing/Landing.controller.atm') {};
+    public component Landing('./src/landing/Landing.controller.atm') {
+        children {
+            @mapping('/')
+            public component Home('./src/landing/pages/Home.controller.atm') {};
 
-    // Sub-ruta de Perfil para la Landing Page
-    @mapping("/landing/perfil")
-    public component Perfil('./src/landing/pages/Perfil.controller.atm') {};
+            @mapping('/perfil')
+            public component Perfil('./src/landing/pages/Perfil.controller.atm') {};
+        }
+    };
 
     // 3. Rutas privadas con interceptores
     @mapping("/dashboard") 

@@ -45,7 +45,9 @@ export function extractBalancedBlock(text, startIndex) {
 }
 export function processControlFlow(html, variables) {
     let result = html;
-    // 0. Limpiar comentarios JSX {/* ... */}
+    // 0a. Reemplazar la directiva @RouterOutlet por la etiqueta <app-router-outlet></app-router-outlet>
+    result = result.replace(/@RouterOutlet/gi, '<app-router-outlet></app-router-outlet>');
+    // 0b. Limpiar comentarios JSX {/* ... */}
     result = result.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
     // 1. Procesar cortocircuitos con .length (ej: @this.notifications.length > 0 && { ... })
     let shortLenMatch;

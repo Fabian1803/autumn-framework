@@ -11,7 +11,5 @@ export class Dashboard {
 
     @Style
     public css(){
-        <style>
-        </style>
     }
 }
