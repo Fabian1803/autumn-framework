@@ -1,0 +1,22 @@
+{
+    "autumn.application.title": "Autumn Framework 🍁 | Modern Enterprise Framework",
+    "autumn.metadata.description": "Autumn Framework: Arquitectura reactiva basada en Single File Components, enrutamiento SPA y seguridad nativa.",
+    "autumn.metadata.keywords": "autumn, framework, typescript, spa, spring-boot, sfc, reactive, web",
+    "autumn.metadata.author": "Autumn Framework Team",
+    "autumn.metadata.robots": "index, follow",
+    "autumn.metadata.canonical-url": "https://autumnframework.dev",
+    "autumn.metadata.favicon": "/favicon.ico",
+    "autumn.metadata.apple-touch-icon": "/assets/apple-touch-icon.png",
+    "autumn.metadata.manifest": "/manifest.json",
+    "autumn.metadata.og-title": "Autumn Framework 🍁",
+    "autumn.metadata.og-description": "Construye aplicaciones web SPA ultra-rápidas con controladores declarativos y componentes reactivos.",
+    "autumn.metadata.og-image": "/assets/logo-corporate.png",
+    "autumn.metadata.og-url": "https://autumnframework.dev",
+    "autumn.metadata.og-type": "website",
+    "autumn.metadata.twitter-card": "summary_large_image",
+    "autumn.metadata.twitter-title": "Autumn Framework 🍁",
+    "autumn.metadata.twitter-description": "Framework TypeScript de arquitectura limpia y componentes reactivos.",
+    "autumn.metadata.twitter-image": "/assets/logo-corporate.png",
+    "autumn.metadata.dns-prefetch": "https://fonts.googleapis.com",
+    "autumn.metadata.preconnect": "https://fonts.gstatic.com"
+}

@@ -10,10 +10,35 @@ export function generateFinalHtml(
   props: AutumnApplicationProperties,
   routes: Record<string, string> = {}
 ): void {
-  const title = props['autumn.application.title'] || 'Autumn Application 🍁';
+  // 1. Elementos Estándar y Meta Etiquetas de SEO
+  const title = props['autumn.application.title'] || 'Autumn Application';
   const description = props['autumn.metadata.description'] || '';
   const keywords = props['autumn.metadata.keywords'] || '';
+  const author = props['autumn.metadata.author'] || '';
+  const robots = props['autumn.metadata.robots'] || 'index, follow';
+  const canonicalUrl = props['autumn.metadata.canonical-url'] || '';
+
+  // 2. Protocolo Open Graph (Facebook, WhatsApp, LinkedIn, Discord)
+  const ogTitle = props['autumn.metadata.og-title'] || title;
+  const ogDescription = props['autumn.metadata.og-description'] || description;
   const ogImage = props['autumn.metadata.og-image'] || '';
+  const ogUrl = props['autumn.metadata.og-url'] || canonicalUrl;
+  const ogType = props['autumn.metadata.og-type'] || 'website';
+
+  // 3. Tarjetas de X (Twitter Cards)
+  const twitterCard = props['autumn.metadata.twitter-card'] || 'summary_large_image';
+  const twitterTitle = props['autumn.metadata.twitter-title'] || ogTitle;
+  const twitterDescription = props['autumn.metadata.twitter-description'] || ogDescription;
+  const twitterImage = props['autumn.metadata.twitter-image'] || ogImage;
+
+  // 4. Recursos de Identidad Visual
+  const favicon = props['autumn.metadata.favicon'] || props['autumn.application.favicon'] || '/favicon.ico';
+  const appleTouchIcon = props['autumn.metadata.apple-touch-icon'] || '';
+  const manifest = props['autumn.metadata.manifest'] || '';
+
+  // 5. Resource Hints (Rendimiento)
+  const dnsPrefetch = props['autumn.metadata.dns-prefetch'] || '';
+  const preconnect = props['autumn.metadata.preconnect'] || '';
 
   const initialStateJson = JSON.stringify(
     Object.fromEntries(
@@ -217,15 +242,46 @@ export function generateFinalHtml(
   </script>
   `;
 
+  // Construir las 7 categorías de cabeceras SEO y optimización
   const metadataHtml = [
+    '<!-- 1. Elementos Estándar y Obligatorios -->',
     '<meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+    '<meta http-equiv="X-UA-Compatible" content="IE=edge">',
     `<title>${title}</title>`,
+    '',
+    '<!-- 2. Meta Etiquetas de SEO (Motores de Búsqueda) -->',
     description ? `<meta name="description" content="${description}">` : '',
     keywords ? `<meta name="keywords" content="${keywords}">` : '',
+    author ? `<meta name="author" content="${author}">` : '',
+    robots ? `<meta name="robots" content="${robots}">` : '',
+    canonicalUrl ? `<link rel="canonical" href="${canonicalUrl}">` : '',
+    '',
+    '<!-- 3. Protocolo Open Graph (Facebook, WhatsApp, Discord) -->',
+    ogTitle ? `<meta property="og:title" content="${ogTitle}">` : '',
+    ogDescription ? `<meta property="og:description" content="${ogDescription}">` : '',
     ogImage ? `<meta property="og:image" content="${ogImage}">` : '',
+    ogUrl ? `<meta property="og:url" content="${ogUrl}">` : '',
+    ogType ? `<meta property="og:type" content="${ogType}">` : '',
+    '',
+    '<!-- 4. Tarjetas de X (Twitter Cards) -->',
+    twitterCard ? `<meta name="twitter:card" content="${twitterCard}">` : '',
+    twitterTitle ? `<meta name="twitter:title" content="${twitterTitle}">` : '',
+    twitterDescription ? `<meta name="twitter:description" content="${twitterDescription}">` : '',
+    twitterImage ? `<meta name="twitter:image" content="${twitterImage}">` : '',
+    '',
+    '<!-- 5. Recursos de Identidad Visual (Favicons e Íconos) -->',
+    favicon ? `<link rel="icon" type="image/x-icon" href="${favicon}">` : '',
+    appleTouchIcon ? `<link rel="apple-touch-icon" href="${appleTouchIcon}">` : '',
+    manifest ? `<link rel="manifest" href="${manifest}">` : '',
+    '',
+    '<!-- 6. Sugerencias de Rendimiento (Resource Hints) -->',
+    dnsPrefetch ? `<link rel="dns-prefetch" href="${dnsPrefetch}">` : '',
+    preconnect ? `<link rel="preconnect" href="${preconnect}" crossorigin>` : '',
+    '',
+    '<!-- 7. Estilos y Estructura CSS -->',
     combinedStyles ? `<style>\n${combinedStyles}\n</style>` : ''
-  ].filter(Boolean).join('\n    ');
+  ].filter(line => line !== null && line !== undefined).join('\n    ');
 
   let baseHtml = '';
   const mainHtmlPath = path.resolve(process.cwd(), 'main.html');
@@ -267,5 +323,17 @@ export function generateFinalHtml(
   const distDir = path.resolve(process.cwd(), 'dist');
   fs.ensureDirSync(distDir);
   fs.writeFileSync(path.join(distDir, 'index.html'), finalHtml);
-  console.log('🍁 [Autumn TS] ¡Compilación exitosa! Arquitectura SPA de enrutamiento limpia en ./dist/index.html');
+
+  // Copiar favicon.ico a dist/ si existe
+  const faviconSource = path.resolve(process.cwd(), favicon.startsWith('/') ? favicon.slice(1) : favicon);
+  const rootFavicon = path.resolve(process.cwd(), 'favicon.ico');
+  const targetFavicon = path.join(distDir, 'favicon.ico');
+
+  if (fs.existsSync(faviconSource)) {
+    fs.copyFileSync(faviconSource, targetFavicon);
+  } else if (fs.existsSync(rootFavicon)) {
+    fs.copyFileSync(rootFavicon, targetFavicon);
+  }
+
+  console.log('[Autumn TS] ¡Compilación exitosa! Arquitectura SPA de enrutamiento limpia en ./dist/index.html');
 }

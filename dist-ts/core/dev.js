@@ -11,12 +11,12 @@ export function startDevServer(port = 3000) {
     app.use(express.static(path.resolve(process.cwd(), 'dist')));
     const watchPattern = path.resolve(process.cwd(), 'src/**/*.atm');
     chokidar.watch(watchPattern).on('change', (filePath) => {
-        console.log(`🍁 Cambio detectado en ${filePath}. Recompilando...`);
+        console.log(`Cambio detectado en ${filePath}. Recompilando...`);
         compileAutumn(filePath);
     });
     app.listen(port, () => {
         console.log(`
-  🍁 Autumn Dev Server (TS) corriendo con éxito!
+   Autumn Dev Server (TS) corriendo con éxito!
   > Local: http://localhost:${port}
     `);
     });
