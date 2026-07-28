@@ -15,6 +15,6 @@ if (fs.existsSync(distPath)) {
     const { startDevServer } = await import('../dev.js');
     startDevServer();
   } catch (err) {
-    console.error('🍁 Error iniciando Autumn:', err);
+    console.error('Error iniciando Autumn:', err);
   }
 }

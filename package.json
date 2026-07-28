@@ -8,8 +8,8 @@
     "autumn": "./bin/autumn.js"
   },
   "scripts": {
-    "dev": "tsx dev.ts",
-    "build": "tsc",
+    "dev": "node bin/autumn.js",
+    "build": "tsc && node -e \"import('./dist-ts/compiler.js').then(m => m.compileAutumn('src/Application.atm'))\"",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
