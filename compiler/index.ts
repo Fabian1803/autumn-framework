@@ -12,6 +12,20 @@ export { processControlFlow } from './control-flow.js';
 export { generateFinalHtml } from './html-generator.js';
 export { resolveIconSvg } from './icon-resolver.js';
 
+export function getEntryFile(): string {
+  const candidates = [
+    path.resolve(process.cwd(), 'src/Application.atm'),
+    path.resolve(process.cwd(), 'src/App.controller.atm'),
+    path.resolve(process.cwd(), 'app/app.atm')
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return candidates[0];
+}
+
 export function resolveComponentWithRepositories(compPath: string, combinedVariables: Record<string, any>, combinedStyles: { value: string }): string {
   if (!fs.existsSync(compPath)) return '';
 
@@ -151,8 +165,8 @@ export function loadApplicationRoutes(combinedVariables: Record<string, any>, co
   return routesMap;
 }
 
-export function compileAutumn(entryFile: string): void {
-  let appFile = path.resolve(entryFile);
+export function compileAutumn(entryFile?: string): void {
+  let appFile = entryFile ? path.resolve(entryFile) : getEntryFile();
   
   if (appFile.endsWith('Application.atm') || appFile.endsWith('Application.ts')) {
     const appContent = fs.readFileSync(appFile, 'utf-8');

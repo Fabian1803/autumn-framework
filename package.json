@@ -7,9 +7,15 @@
   "bin": {
     "autumn": "./bin/autumn.js"
   },
+  "files": [
+    "dist-ts",
+    "bin",
+    "src",
+    "compiler"
+  ],
   "scripts": {
-    "dev": "node bin/autumn.js",
-    "build": "tsc && node -e \"import('./dist-ts/compiler.js').then(m => m.compileAutumn('src/Application.atm'))\"",
+    "dev": "node bin/autumn.js dev",
+    "build": "tsc && node bin/autumn.js build",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

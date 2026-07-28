@@ -244,42 +244,42 @@ export function generateFinalHtml(
 
   // Construir las 7 categorías de cabeceras SEO y optimización
   const metadataHtml = [
-    '<!-- 1. Elementos Estándar y Obligatorios -->',
+    '<!-- 1. Standard Metadata -->',
     '<meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
     '<meta http-equiv="X-UA-Compatible" content="IE=edge">',
     `<title>${title}</title>`,
     '',
-    '<!-- 2. Meta Etiquetas de SEO (Motores de Búsqueda) -->',
+    '<!-- 2. SEO Metadata -->',
     description ? `<meta name="description" content="${description}">` : '',
     keywords ? `<meta name="keywords" content="${keywords}">` : '',
     author ? `<meta name="author" content="${author}">` : '',
     robots ? `<meta name="robots" content="${robots}">` : '',
     canonicalUrl ? `<link rel="canonical" href="${canonicalUrl}">` : '',
     '',
-    '<!-- 3. Protocolo Open Graph (Facebook, WhatsApp, Discord) -->',
+    '<!-- 3. Open Graph Metadata -->',
     ogTitle ? `<meta property="og:title" content="${ogTitle}">` : '',
     ogDescription ? `<meta property="og:description" content="${ogDescription}">` : '',
     ogImage ? `<meta property="og:image" content="${ogImage}">` : '',
     ogUrl ? `<meta property="og:url" content="${ogUrl}">` : '',
     ogType ? `<meta property="og:type" content="${ogType}">` : '',
     '',
-    '<!-- 4. Tarjetas de X (Twitter Cards) -->',
+    '<!-- 4. Twitter Cards Metadata -->',
     twitterCard ? `<meta name="twitter:card" content="${twitterCard}">` : '',
     twitterTitle ? `<meta name="twitter:title" content="${twitterTitle}">` : '',
     twitterDescription ? `<meta name="twitter:description" content="${twitterDescription}">` : '',
     twitterImage ? `<meta name="twitter:image" content="${twitterImage}">` : '',
     '',
-    '<!-- 5. Recursos de Identidad Visual (Favicons e Íconos) -->',
+    '<!-- 5. Visual Identity & Favicons -->',
     favicon ? `<link rel="icon" type="image/x-icon" href="${favicon}">` : '',
     appleTouchIcon ? `<link rel="apple-touch-icon" href="${appleTouchIcon}">` : '',
     manifest ? `<link rel="manifest" href="${manifest}">` : '',
     '',
-    '<!-- 6. Sugerencias de Rendimiento (Resource Hints) -->',
+    '<!-- 6. Resource Hints & Performance -->',
     dnsPrefetch ? `<link rel="dns-prefetch" href="${dnsPrefetch}">` : '',
     preconnect ? `<link rel="preconnect" href="${preconnect}" crossorigin>` : '',
     '',
-    '<!-- 7. Estilos y Estructura CSS -->',
+    '<!-- 7. CSS Styles -->',
     combinedStyles ? `<style>\n${combinedStyles}\n</style>` : ''
   ].filter(line => line !== null && line !== undefined).join('\n    ');
 
@@ -289,7 +289,7 @@ export function generateFinalHtml(
     baseHtml = fs.readFileSync(mainHtmlPath, 'utf-8');
   } else {
     baseHtml = `<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <app-context-metadata />
 </head>
@@ -335,5 +335,5 @@ export function generateFinalHtml(
     fs.copyFileSync(rootFavicon, targetFavicon);
   }
 
-  console.log('[Autumn TS] ¡Compilación exitosa! Arquitectura SPA de enrutamiento limpia en ./dist/index.html');
+  console.log('Compilation successful! SPA bundle generated at ./dist/index.html');
 }
