@@ -1,0 +1,50 @@
+import { Controller, View, Style, repository } from 'autumn-js';
+import { LandingHeader } from './components/LandingHeader.controller.atm';
+import { LandingAside } from './components/LandingAside.controller.atm';
+import { Home } from './pages/Home.controller.atm';
+import { Perfil } from './pages/Perfil.controller.atm';
+
+@Controller
+export class Landing {
+    @repository(
+        LandingHeader,
+        LandingAside,
+        Home,
+        Perfil
+    )
+
+    @View 
+    public html(){
+        <div class="landing-layout">
+            <LandingHeader />
+            <div class="landing-body">
+                <LandingAside />
+                <main class="landing-content">
+                    <app-router-outlet>
+                        <Home />
+                    </app-router-outlet>
+                </main>
+            </div>
+        </div>
+    }
+
+    @Style
+    public css(){
+            .landing-layout {
+                border: 1px solid #dcdde1;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                font-family: sans-serif;
+            }
+            .landing-body {
+                display: flex;
+                min-height: 250px;
+            }
+            .landing-content {
+                flex: 1;
+                padding: 20px;
+                background: #fafafa;
+            }
+    }
+}

@@ -1,0 +1,31 @@
+import { Controller, View, Style } from 'autumn-js';
+
+@Controller
+export class LandingAside {
+    @View 
+    public html(){
+        <aside class="sidebar-panel">
+            <h3>Menú</h3>
+            <ul>
+                <li><a href="/landing">🏠 Inicio Landing</a></li>
+                <li><a href="/landing/perfil">👤 Mi Perfil</a></li>
+                <li><a href="/landing">⚙️ Configuración</a></li>
+            </ul>
+        </aside>
+    }
+
+    @Style
+    public css(){
+            .sidebar-panel {
+                width: 200px;
+                background: #f4f6f7;
+                padding: 15px;
+                border-right: 1px solid #e5e8e8;
+            }
+            .sidebar-panel h3 { margin-top: 0; font-size: 14px; color: #7f8c8d; text-transform: uppercase; }
+            .sidebar-panel ul { list-style: none; padding: 0; margin: 0; }
+            .sidebar-panel li { margin-bottom: 10px; }
+            .sidebar-panel a { color: #34495e; text-decoration: none; font-weight: 500; }
+            .sidebar-panel a:hover { color: #2980b9; }
+    }
+}

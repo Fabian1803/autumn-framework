@@ -1,32 +1,34 @@
-import { Router } from 'autumn-js';
-import { AuthInterceptor } from './security/Auth.interceptor.js';
-import { LoggingInterceptor } from './security/Logging.interceptor.js';
+import { Router, mapping } from 'autumn-js';
+import { AuthInterceptor } from './src/security/Auth.interceptor.js';
+import { LoggingInterceptor } from './src/security/Logging.interceptor.js';
 
 @Router
-export class Application {
+export class ApplicationRoutes {
     // 1. Ruta raíz pública habitual
     @mapping("/")
     public component App('./src/App.controller.atm') {};
     
-    // 2. Rutas privadas con interceptores (tu idea original)
+    // 2. Ruta Landing pública (Layout Persistente)
+    @mapping("/landing")
+    public component Landing('./src/landing/Landing.controller.atm') {};
+
+    // Sub-ruta de Perfil para la Landing Page
+    @mapping("/landing/perfil")
+    public component Perfil('./src/landing/pages/Perfil.controller.atm') {};
+
+    // 3. Rutas privadas con interceptores
     @mapping("/dashboard") 
-    private component Dashboard('./src/Dashboard.controller.atm') {  
+    private component Dashboard('./src/dashboard/Dashboard.controller.atm') {  
         AuthInterceptor, 
         LoggingInterceptor
     };
 
     @mapping('/profile')
-    private component Profile('./src/Profile.controller.atm') { 
+    private component Profile('./src/profile/Profile.controller.atm') { 
         AuthInterceptor 
     };
 
-    // 3. NUEVO: Ruta dinámica para ver un usuario por ID (Pública)
+    // 4. Ruta dinámica para ver un usuario por ID
     @mapping('/user/:id')
-    public component UserDetail('./src/User.controller.atm') {};
-
-    // 4. NUEVO: Ruta dinámica para editar un producto (Privada con Login)
-    @mapping('/product/:id/edit')
-    private component ProductEdit('./src/ProductEdit.controller.atm') {
-        AuthInterceptor
-    };
+    public component UserDetail('./src/user/User.controller.atm') {};
 }

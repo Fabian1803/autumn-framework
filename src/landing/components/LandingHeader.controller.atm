@@ -1,0 +1,31 @@
+import { Controller, View, Style } from 'autumn-js';
+
+@Controller
+export class LandingHeader {
+    @View 
+    public html(){
+        <header class="header-bar">
+            <div class="brand">
+                <span>🍁 Autumn Portal</span>
+            </div>
+            <nav class="header-nav">
+                <a href="/">⬅️ Volver a App Root</a>
+            </nav>
+        </header>
+    }
+
+    @Style
+    public css(){
+            .header-bar {
+                background: #2c3e50;
+                color: white;
+                padding: 12px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-radius: 8px 8px 0 0;
+            }
+            .brand { font-size: 18px; font-weight: bold; }
+            .header-nav a { color: #ecf0f1; text-decoration: none; font-weight: 500; }
+    }
+}

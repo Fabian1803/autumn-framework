@@ -6,4 +6,9 @@ export interface AtmComponentParsed {
     variables: Record<string, string>;
     methods: Record<string, string>;
 }
+export declare function extractBalancedBlock(text: string, startIndex: number): {
+    body: string;
+    startIndex: number;
+    endIndex: number;
+} | null;
 export declare function parseAutumnComponent(content: string, filePath?: string): AtmComponentParsed;

@@ -1,0 +1,20 @@
+import { Controller, View, Style } from 'autumn-js';
+
+@Controller
+export class Perfil {
+    @View 
+    public html(){
+        <section class="page-card profile-card">
+            <h2>👤 Datos de Perfil</h2>
+            <p><strong>Usuario:</strong> Administrador Autumn</p>
+            <p><strong>Rol:</strong> Developer Lead 🍁</p>
+        </section>
+    }
+
+    @Style
+    public css(){
+            .profile-card {
+                border-left: 4px solid #27ae60;
+            }
+    }
+}

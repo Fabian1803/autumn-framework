@@ -8,6 +8,56 @@ export { loadApplicationProperties } from './properties.loader.js';
 export { parseAutumnComponent } from './parser.js';
 export { processControlFlow } from './control-flow.js';
 export { generateFinalHtml } from './html-generator.js';
+export function resolveComponentWithRepositories(compPath, combinedVariables, combinedStyles) {
+    if (!fs.existsSync(compPath))
+        return '';
+    const compContent = fs.readFileSync(compPath, 'utf-8');
+    const compParsed = parseAutumnComponent(compContent, compPath);
+    if (compParsed.styleContent) {
+        combinedStyles.value += `\n${compParsed.styleContent}`;
+    }
+    Object.assign(combinedVariables, compParsed.variables);
+    let html = compParsed.templateContent;
+    const repoMatches = compContent.matchAll(/@repository\s*\(([\s\S]*?)\)|@Repository\s*\(([\s\S]*?)\)/g);
+    for (const match of repoMatches) {
+        const rawList = match[1] || match[2];
+        const compNames = rawList.split(',').map(s => s.trim()).filter(Boolean);
+        for (const subCompName of compNames) {
+            const importRegex = new RegExp(`import\\s+\\{\\s*${subCompName}\\s*\\}\\s+from\\s+["']([^"']+)["']`);
+            const importMatch = compContent.match(importRegex);
+            if (importMatch) {
+                const relPath = importMatch[1];
+                const subPath = path.resolve(path.dirname(compPath), relPath);
+                const subHtml = resolveComponentWithRepositories(subPath, combinedVariables, combinedStyles);
+                const tagNames = [subCompName, subCompName.toLowerCase(), `app-${subCompName.toLowerCase()}`];
+                for (const tagName of tagNames) {
+                    const tagRegex = new RegExp(`<${tagName}\\s*\\/?>|<${tagName}>[\\s\\S]*?<\\/${tagName}>`, 'gi');
+                    if (html.match(tagRegex)) {
+                        html = html.replace(tagRegex, subHtml);
+                    }
+                }
+            }
+        }
+    }
+    return html;
+}
+export function loadApplicationRoutes(combinedVariables, combinedStyles) {
+    const routesPath = path.resolve(process.cwd(), 'applicationRoutes.atm');
+    const routesMap = {};
+    if (fs.existsSync(routesPath)) {
+        const routesContent = fs.readFileSync(routesPath, 'utf-8');
+        const mappingMatches = routesContent.matchAll(/@mapping\s*\(\s*["']([^"']+)["']\s*\)[\s\S]*?(?:public|private)\s+component\s+(\w+)\s*\(\s*["']([^"']+)["']\s*\)/g);
+        for (const match of mappingMatches) {
+            const routePath = match[1];
+            const relCompPath = match[3];
+            const absCompPath = path.resolve(process.cwd(), relCompPath);
+            if (fs.existsSync(absCompPath)) {
+                routesMap[routePath] = resolveComponentWithRepositories(absCompPath, combinedVariables, combinedStyles);
+            }
+        }
+    }
+    return routesMap;
+}
 export function compileAutumn(entryFile) {
     let appFile = path.resolve(entryFile);
     if (appFile.endsWith('Application.atm') || appFile.endsWith('Application.ts')) {
@@ -27,38 +77,17 @@ export function compileAutumn(entryFile) {
         console.warn(`🍁 Warning: No se encontró el controlador principal en ${appFile}`);
         return;
     }
-    const rootContent = fs.readFileSync(appFile, 'utf-8');
-    const rootParsed = parseAutumnComponent(rootContent, appFile);
-    let combinedStyles = rootParsed.styleContent;
-    let rootHtml = rootParsed.templateContent;
-    const combinedVariables = { ...rootParsed.variables };
-    const repoMatches = rootContent.matchAll(/@repository\s*\(\s*(\w+)\s*\)|@Repository\s*\(\s*(\w+)\s*\)/g);
-    for (const match of repoMatches) {
-        const compName = match[1] || match[2];
-        const importRegex = new RegExp(`import\\s+\\{\\s*${compName}\\s*\\}\\s+from\\s+["']([^"']+)["']`);
-        const importMatch = rootContent.match(importRegex);
-        if (importMatch) {
-            const relPath = importMatch[1];
-            const subPath = path.resolve(path.dirname(appFile), relPath);
-            if (fs.existsSync(subPath)) {
-                const subParsed = parseAutumnComponent(fs.readFileSync(subPath, 'utf-8'), subPath);
-                if (subParsed.styleContent) {
-                    combinedStyles += `\n${subParsed.styleContent}`;
-                }
-                Object.assign(combinedVariables, subParsed.variables);
-                const tagNames = [compName, compName.toLowerCase(), `app-${compName.toLowerCase()}`];
-                for (const tagName of tagNames) {
-                    const tagRegex = new RegExp(`<${tagName}\\s*\\/?>|<${tagName}>[\\s\\S]*?<\\/${tagName}>`, 'gi');
-                    if (rootHtml.match(tagRegex)) {
-                        rootHtml = rootHtml.replace(tagRegex, subParsed.templateContent);
-                    }
-                }
-            }
-        }
-    }
+    const combinedVariables = {};
+    const combinedStylesObj = { value: '' };
+    // 1. Resolver el controlador principal y todos sus componentes @repository recursivamente
+    let rootHtml = resolveComponentWithRepositories(appFile, combinedVariables, combinedStylesObj);
+    // 2. Cargar rutas declarativas desde applicationRoutes.atm
+    const routes = loadApplicationRoutes(combinedVariables, combinedStylesObj);
+    // Garantizar que la ruta raíz '/' siempre use la plantilla rootHtml con componentes resueltos
+    routes['/'] = rootHtml;
     const props = loadApplicationProperties();
-    // Procesar directivas de control de flujo (@if, @for, @empty, cortocircuitos &&)
+    // 3. Procesar directivas de control de flujo (@if, @for, @empty, cortocircuitos &&)
     rootHtml = processControlFlow(rootHtml, combinedVariables);
-    // Generar HTML final en ./dist/index.html
-    generateFinalHtml(rootHtml, combinedStyles, combinedVariables, props);
+    // 4. Generar HTML final en ./dist/index.html
+    generateFinalHtml(rootHtml, combinedStylesObj.value, combinedVariables, props, routes);
 }

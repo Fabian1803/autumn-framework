@@ -1,0 +1,24 @@
+import { Controller, View, Style } from 'autumn-js';
+
+@Controller
+export class Home {
+    @View 
+    public html(){
+        <section class="page-card">
+            <h2>🏠 Inicio de la Landing</h2>
+            <p>Bienvenido al módulo principal de la Landing Page construida con componentes reactivos de Autumn.</p>
+        </section>
+    }
+
+    @Style
+    public css(){
+            .page-card {
+                background: white;
+                padding: 15px;
+                border-radius: 6px;
+                border: 1px solid #e1e8ed;
+                margin-bottom: 15px;
+            }
+            .page-card h2 { color: #2c3e50; margin-top: 0; }
+    }
+}

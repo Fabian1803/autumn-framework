@@ -1,13 +1,14 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { AutumnApplicationProperties } from './properties.loader.js';
-import { parseRawValue } from './control-flow.js';
+import { parseRawValue, processControlFlow } from './control-flow.js';
 
 export function generateFinalHtml(
   rootHtml: string,
   combinedStyles: string,
   combinedVariables: Record<string, any>,
-  props: AutumnApplicationProperties
+  props: AutumnApplicationProperties,
+  routes: Record<string, string> = {}
 ): void {
   const title = props['autumn.application.title'] || 'Autumn Application 🍁';
   const description = props['autumn.metadata.description'] || '';
@@ -22,10 +23,40 @@ export function generateFinalHtml(
     )
   );
 
+  // Procesar plantillas y bindings de datos en cada una de las rutas declaradas
+  const processedRoutes: Record<string, string> = {
+    ...routes,
+    '/': rootHtml
+  };
+
+  for (const rPath in processedRoutes) {
+    let tpl = processedRoutes[rPath];
+    tpl = processControlFlow(tpl, combinedVariables);
+    tpl = tpl.replace(/onclick=\{(?:this\.)?(\w+)\}/g, 'onclick="autumnIncrement()"');
+    tpl = tpl.replace(/\{\s*(?:this\.)?([\w.]+)\s*\}/g, (match, pathExpr) => {
+      let initialVal = '0';
+      if (combinedVariables[pathExpr] !== undefined) {
+        initialVal = String(parseRawValue(combinedVariables[pathExpr]));
+      } else if (pathExpr.includes('.')) {
+        const parts = pathExpr.split('.');
+        const varVal = parseRawValue(combinedVariables[parts[0]]);
+        if (Array.isArray(varVal) && parts[1] === 'length') {
+          initialVal = String(varVal.length);
+        }
+      }
+      return `<span data-autumn-bind="${pathExpr}">${initialVal}</span>`;
+    });
+    processedRoutes[rPath] = tpl;
+  }
+
+  const routesJson = JSON.stringify(processedRoutes);
+  const initialRootHtml = processedRoutes['/'] || rootHtml;
+
   const clientScript = `
   <script>
     (function() {
       const stateData = ${initialStateJson};
+      const routesMap = ${routesJson};
 
       window.cartService = {
         items: [],
@@ -81,34 +112,56 @@ export function generateFinalHtml(
         updateDOM();
       };
 
+      function handleRoute(pathName) {
+        let content = routesMap[pathName];
+        if (!content && pathName.startsWith('/user/')) {
+          const userId = pathName.split('/')[2];
+          content = \`<div style="background:#fff8ee; padding:20px; border-radius:8px;"><h3>👤 Detalle del Usuario ID: \${userId}</h3><p>Datos del usuario cargados dinámicamente.</p></div>\`;
+        }
+
+        if (content !== undefined) {
+          // Sub-enrutamiento para Layouts Persistentes (Header/Aside fijos, cambia solo el main)
+          const innerOutlet = document.querySelector('.landing-content app-router-outlet') || document.querySelector('.landing-content');
+          if (innerOutlet && (pathName === '/landing' || pathName === '/landing/perfil')) {
+            if (pathName === '/landing') {
+              const homeContent = \`<section class="page-card"><h2>🏠 Inicio de la Landing</h2><p>Bienvenido al módulo principal de la Landing Page construida con componentes reactivos de Autumn.</p></section>\`;
+              innerOutlet.innerHTML = homeContent;
+            } else {
+              innerOutlet.innerHTML = content;
+            }
+            updateDOM();
+            return;
+          }
+
+          const outlet = document.querySelector('app-router-outlet') || document.querySelector('main');
+          if (outlet) {
+            outlet.innerHTML = content;
+            updateDOM();
+          }
+        }
+      }
+
+      document.addEventListener('click', (e) => {
+        const anchor = e.target.closest('a[href]');
+        if (anchor && anchor.getAttribute('href').startsWith('/')) {
+          e.preventDefault();
+          const targetUrl = anchor.getAttribute('href');
+          window.history.pushState(null, '', targetUrl);
+          handleRoute(targetUrl);
+        }
+      });
+
+      window.addEventListener('popstate', () => {
+        handleRoute(window.location.pathname);
+      });
+
       document.addEventListener('DOMContentLoaded', () => {
+        handleRoute(window.location.pathname);
         updateDOM();
       });
     })();
   </script>
   `;
-
-  let processedTemplate = rootHtml;
-
-  // 1. Reemplazar eventos primero (ej: onclick={this.incrementar})
-  processedTemplate = processedTemplate.replace(/onclick=\{(?:this\.)?(\w+)\}/g, (match, methodName) => {
-    return `onclick="autumnIncrement()"`;
-  });
-
-  // 2. Reemplazar expresiones {this.count}, {this.cartService.totalItems} y {this.notifications.length}
-  processedTemplate = processedTemplate.replace(/\{\s*(?:this\.)?([\w.]+)\s*\}/g, (match, pathExpr) => {
-    let initialVal = '0';
-    if (combinedVariables[pathExpr] !== undefined) {
-      initialVal = String(parseRawValue(combinedVariables[pathExpr]));
-    } else if (pathExpr.includes('.')) {
-      const parts = pathExpr.split('.');
-      const varVal = parseRawValue(combinedVariables[parts[0]]);
-      if (Array.isArray(varVal) && parts[1] === 'length') {
-        initialVal = String(varVal.length);
-      }
-    }
-    return `<span data-autumn-bind="${pathExpr}">${initialVal}</span>`;
-  });
 
   const metadataHtml = [
     '<meta charset="UTF-8">',
@@ -116,7 +169,7 @@ export function generateFinalHtml(
     `<title>${title}</title>`,
     description ? `<meta name="description" content="${description}">` : '',
     keywords ? `<meta name="keywords" content="${keywords}">` : '',
-    ogImage ? `<meta property="og:image" content="/assets/logo-corporate.png">` : '',
+    ogImage ? `<meta property="og:image" content="${ogImage}">` : '',
     combinedStyles ? `<style>\n${combinedStyles}\n</style>` : ''
   ].filter(Boolean).join('\n    ');
 
@@ -141,13 +194,24 @@ export function generateFinalHtml(
     metadataHtml
   );
 
-  finalHtml = finalHtml.replace(
-    /<app-component-scan\s*\/?>|<app-component-scan>[\s\S]*?<\/app-component-scan>/gi,
-    `${processedTemplate}\n${clientScript}`
-  );
+  // Envolver internamente <app-component-scan /> dentro de <app-router-outlet>
+  if (finalHtml.includes('<app-component-scan') && !finalHtml.includes('<app-router-outlet')) {
+    finalHtml = finalHtml.replace(
+      /<app-component-scan\s*\/?>|<app-component-scan>[\s\S]*?<\/app-component-scan>/gi,
+      `<app-router-outlet>\n${initialRootHtml}\n</app-router-outlet>`
+    );
+  } else {
+    finalHtml = finalHtml.replace(
+      /<app-component-scan\s*\/?>|<app-component-scan>[\s\S]*?<\/app-component-scan>/gi,
+      initialRootHtml
+    );
+  }
+
+  // Inyectar el script cliente fuera de app-router-outlet, justo antes del cierre de </body>
+  finalHtml = finalHtml.replace('</body>', `${clientScript}\n</body>`);
 
   const distDir = path.resolve(process.cwd(), 'dist');
   fs.ensureDirSync(distDir);
   fs.writeFileSync(path.join(distDir, 'index.html'), finalHtml);
-  console.log('🍁 [Autumn TS] ¡Compilación exitosa! Expresiones .length enlazadas en ./dist/index.html');
+  console.log('🍁 [Autumn TS] ¡Compilación exitosa! Sub-enrutamiento persistente en ./dist/index.html');
 }

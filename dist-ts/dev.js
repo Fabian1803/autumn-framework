@@ -27,6 +27,10 @@ export function startDevServer(defaultPort) {
     console.log(`🍁 Compilando entrada: ${entryFile}`);
     compileAutumn(entryFile);
     app.use(express.static(path.resolve(process.cwd(), 'dist')));
+    // Fallback SPA: Redirige cualquier ruta no encontrada a dist/index.html para navegación SPA client-side
+    app.use((req, res) => {
+        res.sendFile(path.resolve(process.cwd(), 'dist/index.html'));
+    });
     const watchPatterns = [
         path.resolve(process.cwd(), 'src/**/*.atm'),
         path.resolve(process.cwd(), 'src/**/*.ts'),
@@ -34,6 +38,7 @@ export function startDevServer(defaultPort) {
         path.resolve(process.cwd(), 'src/**/*.css'),
         path.resolve(process.cwd(), 'app/**/*.atm'),
         path.resolve(process.cwd(), 'main.html'),
+        path.resolve(process.cwd(), 'applicationRoutes.atm'),
         path.resolve(process.cwd(), 'src/application.properties.json')
     ];
     chokidar.watch(watchPatterns, { ignoreInitial: true }).on('change', (filePath) => {
