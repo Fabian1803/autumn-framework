@@ -193,7 +193,7 @@ export function Store(options: StoreOptions = {}): any {
     if (options.persist && typeof window !== 'undefined' && window.localStorage) {
       const storeName = options.name || target.name;
       const savedData = localStorage.getItem(`autumn_store_${storeName}`);
-      
+
       const originalConstructor = target;
       const newConstructor: any = function (...args: any[]) {
         const instance = new originalConstructor(...args);
@@ -205,11 +205,11 @@ export function Store(options: StoreOptions = {}): any {
             console.warn(`🍁 Error al restaurar store '${storeName}' de localStorage`);
           }
         }
-        
+
         subscribeToState(() => {
           try {
             localStorage.setItem(`autumn_store_${storeName}`, JSON.stringify(instance));
-          } catch (e) {}
+          } catch (e) { }
         });
 
         return instance;

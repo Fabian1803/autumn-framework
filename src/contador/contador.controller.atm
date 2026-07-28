@@ -3,7 +3,12 @@ import { Controller, State, Autowired, View, Style } from 'autumn-js';
 @Controller
 export class App {
     @State count = 0;
+    @State isLoggedIn = true;
+    @State roles = ['ROLE_USER', 'ROLE_ADMIN'];
+    @State notifications = ['Error en Servidor', 'Actualización Exitosa'];
+    @State showSystemLogs = true;
     @State text = "Hola";
+    @State isActive = false;
     @Autowired cartService: CartService;
     @Autowired authStore: AuthStore;
 
@@ -14,9 +19,59 @@ export class App {
     @View 
     public html(){
         <div>
-            <p>Conteo: {this.count}</p>
+            {/* Atributos dinámicos en etiquetas */}
+            <div class={this.isActive ? 'card active' : 'card'}>
+                <p>Conteo: {this.count}</p>
+            </div>
             <button onclick={this.incrementar}>+1</button>
             <span>🛒 Carrito: {this.cartService.totalItems}</span>
+
+            {/* Control de flujo condicional estilo Angular */}
+            @if (this.isLoggedIn) {
+                <h2>Bienvenido al Sistema Centralizado 🍁</h2>
+                <p>Sesión corporativa activa verificada con éxito.</p>
+            } @else {
+                <h2>Acceso Restringido</h2>
+                <p>Por favor, inicie sesión en el servidor principal.</p>
+            }
+            
+            <hr />
+            
+            {/* Control de flujo iterativo estilo Angular */}
+            <h3>Roles Asignados del Servidor:</h3>
+            <ul>
+                @for (role of this.roles; track role) {
+                    <li>
+                        Security Bean: <span class="badge">{ role }</span>
+                    </li>
+                } @empty {
+                    <li>El usuario no tiene roles asignados.</li>
+                }
+            </ul>
+
+            {/* Cortocircuito Estilo Autumn */}
+            @this.showSystemLogs && {
+                <div class="alert-box">
+                    <p>⚠️ Modo de depuración del servidor activo.</p>
+                </div>
+            }
+
+            {/* Cortocircuito para validación de longitud de listas */}
+            @this.notifications.length > 0 && {
+                <div class="notifications-panel">
+                    <h3>Notificaciones Recientes ({this.notifications.length}):</h3>
+                    <ul>
+                        @for (alert of this.notifications) {
+                            <li>🔔 {alert}</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            {/* Mensajes alternativos de estado vacío */}
+            @this.roles.length === 0 && {
+                <p class="warning-text">El usuario actual no posee credenciales seguras.</p>
+            }
         </div>
     }
 
@@ -30,7 +85,13 @@ export class App {
                 padding: 20px;
                 font-family: sans-serif;
             }
+            .card.active {
+                background-color: #d4edda;
+                border-color: #28a745;
+            }
             h1 { color: #d35400; }
+            .alert-box { background-color: #eee; padding: 10px; }
+            .notifications-panel { border: 1px solid #ccc; }
         </style>
     }
 }
