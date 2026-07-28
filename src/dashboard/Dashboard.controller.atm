@@ -1,15 +1,75 @@
-import { Controller, View, Style, UrlParam } from 'autumn-js';
+import { Controller, View, Style } from 'autumn-js';
 
-@Controller @UrlParam(id)
+@Controller
 export class Dashboard {
-    @State userId = id;
     @View 
     public html(){
-        <div>
+        <div class="dashboard-container">
+            <header class="dashboard-header">
+                <h2>📊 Panel de Control Corporativo (Dashboard) 🍁</h2>
+                <button onclick="autumnLogout()" class="btn-logout">🔒 Cerrar Sesión</button>
+            </header>
+            <main class="dashboard-main">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>📦 Inventario Total</h3>
+                        <p class="metric-value">1,420 Unidades</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>🚚 Entregas Activas</h3>
+                        <p class="metric-value">84 Pedidos</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>🛡️ Estado de Seguridad</h3>
+                        <p class="metric-value status-ok">Sesión Protegida (Cookie OK)</p>
+                    </div>
+                </div>
+            </main>
         </div>
     }
 
     @Style
     public css(){
+        .dashboard-container {
+            font-family: sans-serif;
+            border: 1px solid #2980b9;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f4f6f7;
+        }
+        .dashboard-header {
+            background: #2980b9;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dashboard-header h2 { margin: 0; font-size: 18px; }
+        .btn-logout {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-logout:hover { background: #c0392b; }
+        .dashboard-main { padding: 20px; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dcdde1;
+        }
+        .metric-card h3 { margin-top: 0; font-size: 14px; color: #7f8c8d; }
+        .metric-value { font-size: 20px; font-weight: bold; color: #2c3e50; margin: 5px 0 0 0; }
+        .status-ok { color: #27ae60; font-size: 14px; }
     }
 }

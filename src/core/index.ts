@@ -17,6 +17,30 @@ export interface AutumnApplicationOptions {
 }
 
 // ---------------------------------------------------------------------------
+// Servicio Nativo de Cookies y Seguridad (AutumnCookie)
+// ---------------------------------------------------------------------------
+export class AutumnCookie {
+  public static get(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(';').shift() || '');
+    return null;
+  }
+
+  public static set(name: string, value: string, days = 1): void {
+    if (typeof document === 'undefined') return;
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  }
+
+  public static remove(name: string): void {
+    if (typeof document === 'undefined') return;
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Contenedor IoC (Inversion of Control)
 // ---------------------------------------------------------------------------
 class IoCContainer {
@@ -172,7 +196,7 @@ export const Mapping = mapping;
  */
 export class AuthInterceptor {
   public static canActivate(): boolean {
-    return true;
+    return Boolean(AutumnCookie.get('autumn_token'));
   }
 }
 

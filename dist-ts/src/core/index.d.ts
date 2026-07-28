@@ -11,6 +11,11 @@ export interface AutumnApplicationOptions {
     rootController?: any;
     router?: any;
 }
+export declare class AutumnCookie {
+    static get(name: string): string | null;
+    static set(name: string, value: string, days?: number): void;
+    static remove(name: string): void;
+}
 declare class IoCContainer {
     private instances;
     get<T>(targetClass: new (...args: any[]) => T): T;

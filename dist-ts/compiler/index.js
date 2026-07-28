@@ -4,10 +4,12 @@ import { loadApplicationProperties } from './properties.loader.js';
 import { parseAutumnComponent } from './parser.js';
 import { extractBalancedBlock, processControlFlow } from './control-flow.js';
 import { generateFinalHtml } from './html-generator.js';
+import { resolveIconSvg } from './icon-resolver.js';
 export { loadApplicationProperties } from './properties.loader.js';
 export { parseAutumnComponent } from './parser.js';
 export { processControlFlow } from './control-flow.js';
 export { generateFinalHtml } from './html-generator.js';
+export { resolveIconSvg } from './icon-resolver.js';
 export function resolveComponentWithRepositories(compPath, combinedVariables, combinedStyles) {
     if (!fs.existsSync(compPath))
         return '';
@@ -23,11 +25,25 @@ export function resolveComponentWithRepositories(compPath, combinedVariables, co
         const rawList = match[1] || match[2];
         const compNames = rawList.split(',').map(s => s.trim()).filter(Boolean);
         for (const subCompName of compNames) {
-            const importRegex = new RegExp(`import\\s+\\{\\s*${subCompName}\\s*\\}\\s+from\\s+["']([^"']+)["']`);
+            // Buscar la ruta de importación (ej: 'react-icons/fa', 'react-icons/bi', etc.)
+            const importRegex = new RegExp(`import\\s+\\{[^\\}]*\\b${subCompName}\\b[^\\}]*\\}\\s+from\\s+["']([^"']+)["']`);
             const importMatch = compContent.match(importRegex);
-            if (importMatch) {
-                const relPath = importMatch[1];
-                const subPath = path.resolve(path.dirname(compPath), relPath);
+            const importPath = importMatch ? importMatch[1] : undefined;
+            // 1. Traducir iconos de react-icons a SVG vectorial puro durante la compilación
+            const iconSvg = resolveIconSvg(subCompName, importPath);
+            if (iconSvg) {
+                const tagNames = [subCompName, subCompName.toLowerCase(), `app-${subCompName.toLowerCase()}`];
+                for (const tagName of tagNames) {
+                    const tagRegex = new RegExp(`<${tagName}\\s*\\/?>|<${tagName}>[\\s\\S]*?<\\/${tagName}>`, 'gi');
+                    if (html.match(tagRegex)) {
+                        html = html.replace(tagRegex, iconSvg);
+                    }
+                }
+                continue;
+            }
+            // 2. Resolver componentes Single File (.atm)
+            if (importMatch && importPath && !importPath.startsWith('react-icons')) {
+                const subPath = path.resolve(path.dirname(compPath), importPath);
                 const subHtml = resolveComponentWithRepositories(subPath, combinedVariables, combinedStyles);
                 const tagNames = [subCompName, subCompName.toLowerCase(), `app-${subCompName.toLowerCase()}`];
                 for (const tagName of tagNames) {
@@ -134,11 +150,14 @@ export function compileAutumn(entryFile) {
     let rootHtml = resolveComponentWithRepositories(appFile, combinedVariables, combinedStylesObj);
     // 2. Cargar rutas declarativas desde applicationRoutes.atm
     const routes = loadApplicationRoutes(combinedVariables, combinedStylesObj);
-    // Garantizar que la ruta raíz '/' siempre use la plantilla rootHtml con componentes resueltos
-    routes['/'] = rootHtml;
+    // Si "/" no está explícitamente mapeado en applicationRoutes, usar rootHtml
+    if (!routes['/']) {
+        routes['/'] = rootHtml;
+    }
     const props = loadApplicationProperties();
-    // 3. Procesar directivas de control de flujo (@if, @for, @empty, cortocircuitos &&)
-    rootHtml = processControlFlow(rootHtml, combinedVariables);
+    // 3. Procesar directivas de control de flujo en la vista raíz
+    const initialRoot = routes['/'] || rootHtml;
+    const processedRootHtml = processControlFlow(initialRoot, combinedVariables);
     // 4. Generar HTML final en ./dist/index.html
-    generateFinalHtml(rootHtml, combinedStylesObj.value, combinedVariables, props, routes);
+    generateFinalHtml(processedRootHtml, combinedStylesObj.value, combinedVariables, props, routes);
 }

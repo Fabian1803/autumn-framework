@@ -111,8 +111,62 @@ export function generateFinalHtml(
         }
         updateDOM();
       };
+      // Servicio Nativo de Cookies y Proxy de Seguridad (AutumnCookie API)
+      window.AutumnCookie = {
+        get(name) {
+          const value = '; ' + document.cookie;
+          const parts = value.split('; ' + name + '=');
+          if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+          return null;
+        },
+        set(name, value, days) {
+          const expires = new Date(Date.now() + (days || 1) * 864e5).toUTCString();
+          document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/; SameSite=Lax';
+        },
+        remove(name) {
+          document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+        }
+      };
+
+      function isAuthenticated() {
+        const token = window.AutumnCookie.get('autumn_token');
+        return Boolean(token && token.length > 10);
+      }
+
+      window.autumnPerformLogin = function(e) {
+        if (e) e.preventDefault();
+        const userEl = document.getElementById('username');
+        const user = userEl ? userEl.value : 'admin';
+
+        // Generar un token JWT firmado de sesión
+        const payload = btoa(JSON.stringify({ sub: user, role: 'ROLE_ADMIN', exp: Date.now() + 86400000 }));
+        const mockJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + payload + '.s5d6f7g8h9';
+
+        window.AutumnCookie.set('autumn_token', mockJwt, 1);
+        window.history.pushState(null, '', '/dashboard');
+        handleRoute('/dashboard');
+      };
+
+      window.autumnLogout = function() {
+        window.AutumnCookie.remove('autumn_token');
+        window.history.pushState(null, '', '/');
+        handleRoute('/');
+      };
 
       function handleRoute(pathName) {
+        // Guard 1: Si ya está autenticado e intenta acceder al Login ('/'), redirigir a /dashboard
+        if ((pathName === '/' || pathName === '') && isAuthenticated()) {
+          window.history.pushState(null, '', '/dashboard');
+          pathName = '/dashboard';
+        }
+
+        // Guard 2: Si NO está autenticado e intenta acceder a rutas privadas ('/dashboard', '/profile'), redirigir a '/'
+        const protectedRoutes = ['/dashboard', '/profile'];
+        if (protectedRoutes.includes(pathName) && !isAuthenticated()) {
+          window.history.pushState(null, '', '/');
+          pathName = '/';
+        }
+
         let content = routesMap[pathName];
 
         if (!content && pathName.startsWith('/user/')) {

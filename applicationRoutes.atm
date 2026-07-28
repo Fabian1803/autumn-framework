@@ -4,9 +4,9 @@ import { LoggingInterceptor } from './src/security/Logging.interceptor.js';
 
 @Router
 export class ApplicationRoutes {
-    // 1. Ruta raíz pública habitual
+    // 1. Ruta raíz "/" mapeada al formulario de Login
     @mapping("/")
-    public component App('./src/App.controller.atm') {};
+    public component Login('./src/login/login.controller.atm') {};
     
     // 2. Ruta Landing pública con hijas (Layout Persistente y RouterOutlet)
     @mapping("/landing")
