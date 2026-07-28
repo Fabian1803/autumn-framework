@@ -1,0 +1,11 @@
+import { Controller, View, Style, Autowired, repository } from 'autumn-js';
+import { AppService } from './App.service.atm';
+import { Contador } from './contador/contador.controller.atm';
+
+@Controller
+export class App {
+    @repository(Contador)
+    @Autowired appService: AppService;
+    @View url ("./app.html");
+    @Style ("./App.css");
+}

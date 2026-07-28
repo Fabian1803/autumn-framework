@@ -1,0 +1,7 @@
+{
+    "server.port": 3200,
+    "autumn.application.title": "Autumn Enterprise Application",
+    "autumn.metadata.description": "Arquitectura basada en Single File Components",
+    "autumn.metadata.keywords": "framework, typescript, spring-style, compilation",
+    "autumn.metadata.og-image": "/assets/logo-corporate.png"
+}

@@ -1,0 +1,19 @@
+import { State, Service } from 'autumn-js';
+import { UserService } from './user.service';
+import { User } from './user.atm';
+
+@Service()
+export class AppService {
+    @State users = new State<User[]>([])
+
+    constructor(private userService: UserService) { }
+
+    async onInit() {
+        const data = await this.userService.getAll();
+        this.users.set(data);
+    }
+
+    eliminarUsuario(id: number) {
+        this.users.set(this.users.value.filter(u => u.id !== id));
+    }
+}

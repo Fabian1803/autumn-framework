@@ -1,0 +1,36 @@
+import { Controller, State, Autowired, View, Style } from 'autumn-js';
+
+@Controller
+export class App {
+    @State count = 0;
+    @State text = "Hola";
+    @Autowired cartService: CartService;
+    @Autowired authStore: AuthStore;
+
+    incrementar() {
+        this.count++; 
+    }
+  
+    @View 
+    static html(){
+        <div>
+            <p>Conteo: {this.count}</p>
+            <button onclick={this.incrementar}>+1</button>
+            <span>🛒 Carrito: {this.cartService.totalItems}</span>
+        </div>
+    }
+
+    @Style
+    static css(){
+        <style>
+            .card {
+                background-color: #fff3e6;
+                border: 2px solid #e67e22;
+                border-radius: 10px;
+                padding: 20px;
+                font-family: sans-serif;
+            }
+            h1 { color: #d35400; }
+        </style>
+    }
+}

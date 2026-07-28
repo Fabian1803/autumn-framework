@@ -1,0 +1,14 @@
+import { Injectable, State } from 'autumn-js';
+
+@Injectable()
+export class CartService {
+    @State items: string[] = [];
+
+    agregarProducto(item: string) {
+        this.items = [...this.items, item];
+    }
+
+    get totalItems() {
+        return this.items.length;
+    }
+}
