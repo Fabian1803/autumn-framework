@@ -22,9 +22,9 @@ export function startDevServer(defaultPort) {
     const props = loadApplicationProperties();
     const port = defaultPort || props['server.port'] || 3200;
     const app = express();
-    console.log('Iniciando servidor de desarrollo de Autumn (TypeScript)...');
+    console.log('🍁 Iniciando servidor de desarrollo de Autumn (TypeScript)...');
     const entryFile = getEntryFile();
-    console.log(`Compilando entrada: ${entryFile}`);
+    console.log(`🍁 Compilando entrada: ${entryFile}`);
     compileAutumn(entryFile);
     app.use(express.static(path.resolve(process.cwd(), 'dist')));
     // Fallback SPA: Redirige cualquier ruta no encontrada a dist/index.html para navegación SPA client-side
@@ -42,7 +42,7 @@ export function startDevServer(defaultPort) {
         path.resolve(process.cwd(), 'src/application.properties.json')
     ];
     chokidar.watch(watchPatterns, { ignoreInitial: true }).on('change', (filePath) => {
-        console.log(`Cambio detectado en ${filePath}. Recompilando...`);
+        console.log(`🍁 Cambio detectado en ${filePath}. Recompilando...`);
         compileAutumn(getEntryFile());
     });
     app.listen(port, () => {

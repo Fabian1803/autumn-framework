@@ -1,4 +1,7 @@
+// 🍁 Autumn Framework Core Runtime (autumn-js)
+// ---------------------------------------------------------------------------
 // Servicio Nativo de Cookies y Seguridad (AutumnCookie)
+// ---------------------------------------------------------------------------
 export class AutumnCookie {
     static get(name) {
         if (typeof document === 'undefined')
@@ -49,11 +52,13 @@ export function notifyStateChange() {
             listener();
         }
         catch (e) {
-            console.error('Error en listener de reactividad Autumn:', e);
+            console.error('🍁 Error en listener de reactividad Autumn:', e);
         }
     }
 }
+// ---------------------------------------------------------------------------
 // Decoradores de Propiedad y Clase (@State, @Autowired, @UrlParam)
+// ---------------------------------------------------------------------------
 /**
  * Decorador @State: Marca una propiedad como reactiva.
  */
@@ -83,7 +88,7 @@ export function Autowired(serviceClass) {
             get() {
                 const targetType = serviceClass || (typeof Reflect !== 'undefined' && Reflect.getMetadata ? Reflect.getMetadata('design:type', target, propertyKey) : null);
                 if (!targetType) {
-                    throw new Error(`@Autowired no pudo determinar la clase para '${propertyKey}'. Pasa la clase explícitamente: @Autowired(MiServicio).`);
+                    throw new Error(`🍁 @Autowired no pudo determinar la clase para '${propertyKey}'. Pasa la clase explícitamente: @Autowired(MiServicio).`);
                 }
                 return container.get(targetType);
             },
@@ -105,7 +110,9 @@ export function UrlParam(paramName) {
         }
     };
 }
+// ---------------------------------------------------------------------------
 // Decoradores de Clase (@Controller, @Service, @Injectable, @Store, @Repository, @Router, @mapping)
+// ---------------------------------------------------------------------------
 export function Controller(target) {
     target.prototype.__isAutumnController = true;
     return target;
@@ -156,7 +163,7 @@ export class AuthInterceptor {
 }
 export class LoggingInterceptor {
     static intercept(req) {
-        console.log('Route Access Logged');
+        console.log('🍁 Route Access Logged');
     }
 }
 /**
@@ -178,7 +185,7 @@ export function Store(options = {}) {
                         Object.assign(instance, parsed);
                     }
                     catch (e) {
-                        console.warn(`Error al restaurar store '${storeName}' de localStorage`);
+                        console.warn(`🍁 Error al restaurar store '${storeName}' de localStorage`);
                     }
                 }
                 subscribeToState(() => {
