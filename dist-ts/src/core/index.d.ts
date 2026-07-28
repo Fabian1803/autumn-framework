@@ -8,7 +8,8 @@ export interface StoreOptions {
     persist?: boolean;
 }
 export interface AutumnApplicationOptions {
-    rootController: any;
+    rootController?: any;
+    router?: any;
 }
 declare class IoCContainer {
     private instances;
@@ -21,31 +22,45 @@ export declare function subscribeToState(listener: Listener): () => void;
 export declare function notifyStateChange(): void;
 /**
  * Decorador @State: Marca una propiedad como reactiva.
- * Al modificar su valor, notifica a la UI para actualizar el DOM.
  */
 export declare function State(target: any, propertyKey: string): void;
 /**
- * Decorador @Autowired: Inyecta automáticamente un Servicio o Store Singleton.
+ * Decorador @Autowired: Inyecta automáticamente un Servicio o Store.
  */
 export declare function Autowired(serviceClass?: any): any;
+/**
+ * Decorador @UrlParam: Captura parámetros dinámicos de URL (ej: /user/:id)
+ */
+export declare function UrlParam(paramName?: string): any;
 export declare function Controller(target: any): any;
 export declare function Service(): any;
 export declare function Injectable(): any;
-/**
- * Decorador @Repository: Registra componentes/controladores hijos autorizados.
- */
 export declare function Repository(...components: any[]): any;
 export declare const repository: typeof Repository;
 /**
- * Decorador @Store: Define una tienda de estado global.
- * Si persist: true, sincroniza automáticamente con localStorage.
+ * Decorador @Router y @mapping para enrutamiento
+ */
+export declare function Router(target: any): any;
+export declare function mapping(path: string): any;
+export declare const Mapping: typeof mapping;
+/**
+ * Interceptores base para Seguridad y Logs
+ */
+export declare class AuthInterceptor {
+    static canActivate(): boolean;
+}
+export declare class LoggingInterceptor {
+    static intercept(req: any): void;
+}
+/**
+ * Decorador @Store
  */
 export declare function Store(options?: StoreOptions): any;
 /**
  * Decoradores @View y @Style
  */
-export declare function View(viewPathOrTemplate: string): any;
-export declare function Style(stylePathOrCss: string): any;
+export declare function View(viewPathOrTemplate?: string): any;
+export declare function Style(stylePathOrCss?: string): any;
 /**
  * Decorador @AutumnApplication
  */

@@ -1,0 +1,17 @@
+import { Controller, View, Style, UrlParam } from 'autumn-js';
+
+@Controller @UrlParam(id)
+export class Dashboard {
+    @State userId = id;
+    @View 
+    public html(){
+        <div>
+        </div>
+    }
+
+    @Style
+    public css(){
+        <style>
+        </style>
+    }
+}

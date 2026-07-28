@@ -32,11 +32,10 @@ export function notifyStateChange() {
     }
 }
 // ---------------------------------------------------------------------------
-// Decoradores de Propiedad (@State, @Autowired)
+// Decoradores de Propiedad y Clase (@State, @Autowired, @UrlParam)
 // ---------------------------------------------------------------------------
 /**
  * Decorador @State: Marca una propiedad como reactiva.
- * Al modificar su valor, notifica a la UI para actualizar el DOM.
  */
 export function State(target, propertyKey) {
     const privateKey = `__state_${propertyKey}`;
@@ -56,7 +55,7 @@ export function State(target, propertyKey) {
     });
 }
 /**
- * Decorador @Autowired: Inyecta automáticamente un Servicio o Store Singleton.
+ * Decorador @Autowired: Inyecta automáticamente un Servicio o Store.
  */
 export function Autowired(serviceClass) {
     return function (target, propertyKey) {
@@ -73,8 +72,21 @@ export function Autowired(serviceClass) {
         });
     };
 }
+/**
+ * Decorador @UrlParam: Captura parámetros dinámicos de URL (ej: /user/:id)
+ */
+export function UrlParam(paramName) {
+    return function (target, propertyKey) {
+        if (propertyKey) {
+            target[propertyKey] = paramName;
+        }
+        else {
+            target.prototype.__urlParam = paramName;
+        }
+    };
+}
 // ---------------------------------------------------------------------------
-// Decoradores de Clase (@Controller, @Service, @Injectable, @Store, @Repository, @AutumnApplication)
+// Decoradores de Clase (@Controller, @Service, @Injectable, @Store, @Repository, @Router, @mapping)
 // ---------------------------------------------------------------------------
 export function Controller(target) {
     target.prototype.__isAutumnController = true;
@@ -89,9 +101,6 @@ export function Service() {
 export function Injectable() {
     return Service();
 }
-/**
- * Decorador @Repository: Registra componentes/controladores hijos autorizados.
- */
 export function Repository(...components) {
     return function (target, propertyKey) {
         if (propertyKey) {
@@ -104,8 +113,36 @@ export function Repository(...components) {
 }
 export const repository = Repository;
 /**
- * Decorador @Store: Define una tienda de estado global.
- * Si persist: true, sincroniza automáticamente con localStorage.
+ * Decorador @Router y @mapping para enrutamiento
+ */
+export function Router(target) {
+    target.prototype.__isAutumnRouter = true;
+    return target;
+}
+export function mapping(path) {
+    return function (target, propertyKey, descriptor) {
+        if (!target.__routes) {
+            target.__routes = [];
+        }
+        target.__routes.push({ path, method: propertyKey });
+    };
+}
+export const Mapping = mapping;
+/**
+ * Interceptores base para Seguridad y Logs
+ */
+export class AuthInterceptor {
+    static canActivate() {
+        return true;
+    }
+}
+export class LoggingInterceptor {
+    static intercept(req) {
+        console.log('🍁 Route Access Logged');
+    }
+}
+/**
+ * Decorador @Store
  */
 export function Store(options = {}) {
     return function (target) {
@@ -169,6 +206,7 @@ export function Style(stylePathOrCss) {
 export function AutumnApplication(options) {
     return function (target) {
         target.__rootController = options.rootController;
+        target.__router = options.router;
         return target;
     };
 }

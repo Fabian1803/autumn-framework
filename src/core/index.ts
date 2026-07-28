@@ -12,7 +12,8 @@ export interface StoreOptions {
 }
 
 export interface AutumnApplicationOptions {
-  rootController: any;
+  rootController?: any;
+  router?: any;
 }
 
 // ---------------------------------------------------------------------------
@@ -58,12 +59,11 @@ export function notifyStateChange(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Decoradores de Propiedad (@State, @Autowired)
+// Decoradores de Propiedad y Clase (@State, @Autowired, @UrlParam)
 // ---------------------------------------------------------------------------
 
 /**
  * Decorador @State: Marca una propiedad como reactiva.
- * Al modificar su valor, notifica a la UI para actualizar el DOM.
  */
 export function State(target: any, propertyKey: string): void {
   const privateKey = `__state_${propertyKey}`;
@@ -85,7 +85,7 @@ export function State(target: any, propertyKey: string): void {
 }
 
 /**
- * Decorador @Autowired: Inyecta automáticamente un Servicio o Store Singleton.
+ * Decorador @Autowired: Inyecta automáticamente un Servicio o Store.
  */
 export function Autowired(serviceClass?: any): any {
   return function (target: any, propertyKey: string) {
@@ -103,8 +103,21 @@ export function Autowired(serviceClass?: any): any {
   };
 }
 
+/**
+ * Decorador @UrlParam: Captura parámetros dinámicos de URL (ej: /user/:id)
+ */
+export function UrlParam(paramName?: string): any {
+  return function (target: any, propertyKey?: string) {
+    if (propertyKey) {
+      target[propertyKey] = paramName;
+    } else {
+      target.prototype.__urlParam = paramName;
+    }
+  };
+}
+
 // ---------------------------------------------------------------------------
-// Decoradores de Clase (@Controller, @Service, @Injectable, @Store, @Repository, @AutumnApplication)
+// Decoradores de Clase (@Controller, @Service, @Injectable, @Store, @Repository, @Router, @mapping)
 // ---------------------------------------------------------------------------
 
 export function Controller(target: any): any {
@@ -123,9 +136,6 @@ export function Injectable(): any {
   return Service();
 }
 
-/**
- * Decorador @Repository: Registra componentes/controladores hijos autorizados.
- */
 export function Repository(...components: any[]): any {
   return function (target: any, propertyKey?: string) {
     if (propertyKey) {
@@ -139,8 +149,41 @@ export function Repository(...components: any[]): any {
 export const repository = Repository;
 
 /**
- * Decorador @Store: Define una tienda de estado global.
- * Si persist: true, sincroniza automáticamente con localStorage.
+ * Decorador @Router y @mapping para enrutamiento
+ */
+export function Router(target: any): any {
+  target.prototype.__isAutumnRouter = true;
+  return target;
+}
+
+export function mapping(path: string): any {
+  return function (target: any, propertyKey?: string, descriptor?: PropertyDescriptor) {
+    if (!target.__routes) {
+      target.__routes = [];
+    }
+    target.__routes.push({ path, method: propertyKey });
+  };
+}
+
+export const Mapping = mapping;
+
+/**
+ * Interceptores base para Seguridad y Logs
+ */
+export class AuthInterceptor {
+  public static canActivate(): boolean {
+    return true;
+  }
+}
+
+export class LoggingInterceptor {
+  public static intercept(req: any): void {
+    console.log('🍁 Route Access Logged');
+  }
+}
+
+/**
+ * Decorador @Store
  */
 export function Store(options: StoreOptions = {}): any {
   return function (target: any) {
@@ -183,7 +226,7 @@ export function Store(options: StoreOptions = {}): any {
 /**
  * Decoradores @View y @Style
  */
-export function View(viewPathOrTemplate: string): any {
+export function View(viewPathOrTemplate?: string): any {
   return function (target: any, propertyKey?: string) {
     if (propertyKey) {
       target[propertyKey] = viewPathOrTemplate;
@@ -193,7 +236,7 @@ export function View(viewPathOrTemplate: string): any {
   };
 }
 
-export function Style(stylePathOrCss: string): any {
+export function Style(stylePathOrCss?: string): any {
   return function (target: any, propertyKey?: string) {
     if (propertyKey) {
       target[propertyKey] = stylePathOrCss;
@@ -209,6 +252,7 @@ export function Style(stylePathOrCss: string): any {
 export function AutumnApplication(options: AutumnApplicationOptions): any {
   return function (target: any) {
     target.__rootController = options.rootController;
+    target.__router = options.router;
     return target;
   };
 }

@@ -53,7 +53,7 @@ export function parseAutumnComponent(content: string, filePath?: string): AtmCom
 
   let templateContent = '';
   const viewFileMatch = content.match(/@View(?:\s+url)?\s*\(\s*["']([^"']+)["']\s*\)/);
-  const viewMatch = content.match(/@View[\s\S]*?static\s+html\s*\(\)\s*\{([\s\S]*?)\n\s*\}/);
+  const viewMatch = content.match(/@View[\s\S]*?(?:static|public)?\s+html\s*\(\)\s*\{([\s\S]*?)\n\s*\}/);
   const templateTagMatch = content.match(/<template>([\s\S]*?)<\/template>/);
 
   if (viewFileMatch) {
@@ -120,14 +120,12 @@ export function compileAutumn(entryFile: string): void {
     return;
   }
 
-  // 1. Cargar Controlador Raíz (AppController)
   const rootContent = fs.readFileSync(appFile, 'utf-8');
   const rootParsed = parseAutumnComponent(rootContent, appFile);
   let combinedStyles = rootParsed.styleContent;
   let rootHtml = rootParsed.templateContent;
   const combinedVariables = { ...rootParsed.variables };
 
-  // 2. Resolver Sub-componentes registrados en @repository (ej: @repository(Contador))
   const repoMatches = rootContent.matchAll(/@repository\s*\(\s*(\w+)\s*\)|@Repository\s*\(\s*(\w+)\s*\)/g);
   for (const match of repoMatches) {
     const compName = match[1] || match[2];
@@ -145,7 +143,6 @@ export function compileAutumn(entryFile: string): void {
         }
         Object.assign(combinedVariables, subParsed.variables);
 
-        // Reemplazar tanto <Contador /> como <Contador></Contador> o <app-contador>
         const tagNames = [compName, compName.toLowerCase(), `app-${compName.toLowerCase()}`];
         for (const tagName of tagNames) {
           const tagRegex = new RegExp(`<${tagName}\\s*\\/?>|<${tagName}>[\\s\\S]*?<\\/${tagName}>`, 'gi');
@@ -243,12 +240,10 @@ export function compileAutumn(entryFile: string): void {
 
   let processedTemplate = rootHtml;
 
-  // 1. Reemplazar eventos primero
   processedTemplate = processedTemplate.replace(/onclick=\{(?:this\.)?(\w+)\}/g, (match, methodName) => {
     return `onclick="autumnIncrement()"`;
   });
 
-  // 2. Reemplazar expresiones {this.count} y {this.cartService.totalItems}
   processedTemplate = processedTemplate.replace(/\{\s*(?:this\.)?([\w.]+)\s*\}/g, (match, pathExpr) => {
     let initialVal = '0';
     if (combinedVariables[pathExpr] !== undefined) {
