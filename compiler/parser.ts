@@ -39,7 +39,12 @@ export function parseAutumnComponent(content: string, filePath?: string): AtmCom
   const selector = selectorMatch ? selectorMatch[1] : undefined;
 
   let styleContent = '';
-  const styleFileMatch = content.match(/@Style(?:\s+url)?\s*\(\s*["']([^"']+)["']\s*\)/);
+  const styleInvalidMatch = content.match(/@Style(?:\s+public)?\s*css\s*\(\s*["']([^"']+)["']/);
+  if (styleInvalidMatch) {
+    throw new Error(`[Autumn Compiler Error] Sintaxis inválida en ${filePath || 'componente'}: No se puede poner una ruta de archivo en public css('${styleInvalidMatch[1]}'). Usa '@Style public ("${styleInvalidMatch[1]}");' para archivos externos o '@Style public css() { ... }' para estilos integrados.`);
+  }
+
+  const styleFileMatch = content.match(/@Style(?:[\s-]*url)?(?:\s+public)?\s*\(\s*["']([^"']+)["']\s*\)/);
   const stylePos = content.indexOf('@Style');
 
   if (styleFileMatch) {
@@ -67,7 +72,12 @@ export function parseAutumnComponent(content: string, filePath?: string): AtmCom
   }
 
   let templateContent = '';
-  const viewFileMatch = content.match(/@View(?:\s+url)?\s*\(\s*["']([^"']+)["']\s*\)/);
+  const viewInvalidMatch = content.match(/@View(?:\s+public)?\s*html\s*\(\s*["']([^"']+)["']/);
+  if (viewInvalidMatch) {
+    throw new Error(`[Autumn Compiler Error] Sintaxis inválida en ${filePath || 'componente'}: No se puede poner una ruta de archivo en public html('${viewInvalidMatch[1]}'). Usa '@View public ("${viewInvalidMatch[1]}");' para archivos externos o '@View public html() { ... }' para plantillas integradas.`);
+  }
+
+  const viewFileMatch = content.match(/@View(?:[\s-]*url)?(?:\s+public)?\s*\(\s*["']([^"']+)["']\s*\)/);
   const viewPos = content.indexOf('@View');
 
   if (viewFileMatch) {

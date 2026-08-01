@@ -6,6 +6,6 @@ import { Contador } from './contador/contador.controller.atm';
 export class App {
     @repository(Contador)
     @Autowired appService: AppService;
-    @View url ("./app.html");
-    @Style ("./App.css");
+    @View public ("./app.html");
+    @Style public ("./App.css");
 }

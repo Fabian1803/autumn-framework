@@ -28,7 +28,7 @@ export class App {
 
             {/* Control de flujo condicional estilo Angular */}
             @if (this.isLoggedIn) {
-                <h2>Bienvenido al Sistema Centralizado 🍁</h2>
+                <h2>Bienvenido al Sistema Centralizado </h2>
                 <p>Sesión corporativa activa verificada con éxito.</p>
             } @else {
                 <h2>Acceso Restringido</h2>
@@ -52,7 +52,7 @@ export class App {
             {/* Cortocircuito Estilo Autumn */}
             @this.showSystemLogs && {
                 <div class="alert-box">
-                    <p>⚠️ Modo de depuración del servidor activo.</p>
+                    <p> Modo de depuración del servidor activo.</p>
                 </div>
             }
 
@@ -62,7 +62,7 @@ export class App {
                     <h3>Notificaciones Recientes ({this.notifications.length}):</h3>
                     <ul>
                         @for (alert of this.notifications) {
-                            <li>🔔 {alert}</li>
+                            <li> {alert}</li>
                         }
                     </ul>
                 </div>

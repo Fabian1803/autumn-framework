@@ -4,11 +4,9 @@ import { LoggingInterceptor } from './src/security/Logging.interceptor.js';
 
 @Router
 export class ApplicationRoutes {
-    // 1. Ruta raíz "/" mapeada al formulario de Login
     @mapping("/")
     public component Login('./src/login/login.controller.atm') {};
     
-    // 2. Ruta Landing pública con hijas (Layout Persistente y RouterOutlet)
     @mapping("/landing")
     public component Landing('./src/landing/Landing.controller.atm') {
         children {
@@ -20,7 +18,6 @@ export class ApplicationRoutes {
         }
     };
 
-    // 3. Rutas privadas con interceptores
     @mapping("/dashboard") 
     private component Dashboard('./src/dashboard/Dashboard.controller.atm') {  
         AuthInterceptor, 
@@ -32,7 +29,6 @@ export class ApplicationRoutes {
         AuthInterceptor 
     };
 
-    // 4. Ruta dinámica para ver un usuario por ID
     @mapping('/user/:id')
     public component UserDetail('./src/user/User.controller.atm') {};
 }

@@ -1,0 +1,36 @@
+{
+  "Autumn Monolithic Controller": {
+    "prefix": "ccm",
+    "body": [
+      "import { Controller, View, Style } from 'autumn-js';",
+      "",
+      "@Controller",
+      "export class ${1:App} {",
+      "   ",
+      "    @View ",
+      "    public html(){",
+      "        ${0}",
+      "    }",
+      "",
+      "    @Style",
+      "    public css(){",
+      "            ",
+      "    }",
+      "}"
+    ],
+    "description": "Crear componente/controlador monolítico de Autumn Framework"
+  },
+  "Autumn Decoupled Controller": {
+    "prefix": "ccn",
+    "body": [
+      "@Controller",
+      "export class ${1:App} {",
+      "    @repository(${2})",
+      "    @Autowired ${3:appService}: ${4:AppService};",
+      "    @View public (\"${5:./app.html}\");",
+      "    @Style public (\"${6:./App.css}\");",
+      "}"
+    ],
+    "description": "Crear componente/controlador distribuido/desacoplado de Autumn Framework"
+  }
+}

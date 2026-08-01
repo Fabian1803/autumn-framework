@@ -1,5 +1,5 @@
 // auth.store.ts
-import { Store, Bean } from 'autumn-js';
+import { Store, State } from 'autumn-js';
 import { User } from './user.atm';
 
 @Store({
@@ -7,8 +7,8 @@ import { User } from './user.atm';
     persist: true // Guarda automáticamente en localStorage
 })
 export class AuthStore {
-    @Bean currentUser: User | null = null;
-    @Bean isAuthenticated: boolean = false;
+    @State currentUser: User | null = null;
+    @State isAuthenticated: boolean = false;
 
     login(user: User) {
         this.currentUser = user;

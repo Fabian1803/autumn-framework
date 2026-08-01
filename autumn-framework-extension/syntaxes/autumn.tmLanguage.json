@@ -1,0 +1,56 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Autumn",
+  "scopeName": "source.autumn",
+  "patterns": [
+    {
+      "include": "#decorators"
+    },
+    {
+      "include": "#router-outlet"
+    },
+    {
+      "include": "#autumn-keywords"
+    },
+    {
+      "include": "#html-tags"
+    },
+    {
+      "include": "source.ts"
+    }
+  ],
+  "repository": {
+    "decorators": {
+      "patterns": [
+        {
+          "name": "entity.name.function.decorator.autumn",
+          "match": "@(Controller|Service|Injectable|Store|Router|AutumnApplication|Autowired|State|repository|View|Style|mapping|Bean)\\b"
+        },
+        {
+          "name": "entity.name.function.decorator.autumn",
+          "match": "@[a-zA-Z_$][a-zA-Z0-9_$]*"
+        }
+      ]
+    },
+    "router-outlet": {
+      "name": "keyword.other.router-outlet.autumn",
+      "match": "@RouterOutlet\\b"
+    },
+    "autumn-keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.autumn",
+          "match": "\\b(component|children|public|private|url)\\b"
+        }
+      ]
+    },
+    "html-tags": {
+      "patterns": [
+        {
+          "name": "entity.name.tag.autumn",
+          "match": "</?[a-zA-Z0-9_-]+\\b"
+        }
+      ]
+    }
+  }
+}

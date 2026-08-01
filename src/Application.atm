@@ -4,6 +4,6 @@ import { App } from './App.controller.atm';
 @AutumnApplication({ rootController: App })
 export class Application {
     public static main(): void {
-        console.log("Autumn Enterprise Application Started successfully. 🍁");
+        console.log("Autumn Enterprise Application Started successfully.");
     }
 }

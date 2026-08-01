@@ -1,0 +1,32 @@
+{
+  "iconDefinitions": {
+    "autumn_controller": {
+      "iconPath": "./autumn-icon-controller.png"
+    },
+    "autumn_service": {
+      "iconPath": "./autumn-icon-service.png"
+    }
+  },
+  "fileExtensions": {
+    "atm": "autumn_controller",
+    "controller.atm": "autumn_controller",
+    "service.atm": "autumn_service",
+    "services.atm": "autumn_service"
+  },
+  "light": {
+    "fileExtensions": {
+      "atm": "autumn_controller",
+      "controller.atm": "autumn_controller",
+      "service.atm": "autumn_service",
+      "services.atm": "autumn_service"
+    }
+  },
+  "highContrast": {
+    "fileExtensions": {
+      "atm": "autumn_controller",
+      "controller.atm": "autumn_controller",
+      "service.atm": "autumn_service",
+      "services.atm": "autumn_service"
+    }
+  }
+}
