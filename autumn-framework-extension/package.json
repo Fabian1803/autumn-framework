@@ -3,7 +3,7 @@
   "publisher": "FabianRiveraMorales",
   "displayName": "Autumn Framework Support",
   "description": "Soporte de sintaxis, resaltado, snippets e íconos para archivos .atm",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "license": "MIT",
   "icon": "autumn-icon-controller.png",
   "keywords": [
@@ -24,12 +24,29 @@
   "contributes": {
     "languages": [
       {
+        "id": "autumn-service",
+        "aliases": [
+          "Autumn Service",
+          "autumn-service"
+        ],
+        "extensions": [
+          ".service.atm",
+          ".services.atm"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./autumn-icon-service.png",
+          "dark": "./autumn-icon-service.png"
+        }
+      },
+      {
         "id": "autumn",
         "aliases": [
           "Autumn",
           "autumn"
         ],
         "extensions": [
+          ".controller.atm",
           ".atm"
         ],
         "configuration": "./language-configuration.json",
@@ -44,19 +61,21 @@
         "language": "autumn",
         "scopeName": "source.autumn",
         "path": "./syntaxes/autumn.tmLanguage.json"
+      },
+      {
+        "language": "autumn-service",
+        "scopeName": "source.autumn",
+        "path": "./syntaxes/autumn.tmLanguage.json"
       }
     ],
     "snippets": [
       {
         "language": "autumn",
         "path": "./snippets/snippets.json"
-      }
-    ],
-    "iconThemes": [
+      },
       {
-        "id": "autumn-icons",
-        "label": "Autumn Icon Theme",
-        "path": "./icon-theme.json"
+        "language": "autumn-service",
+        "path": "./snippets/snippets.json"
       }
     ]
   }
